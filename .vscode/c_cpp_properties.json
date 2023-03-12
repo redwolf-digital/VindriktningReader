@@ -8,8 +8,8 @@
         {
             "name": "PlatformIO",
             "includePath": [
-                "C:/Users/MOMIJI/Documents/PlatformIO/Projects/vindriktning_test/include",
-                "C:/Users/MOMIJI/Documents/PlatformIO/Projects/vindriktning_test/src",
+                "C:/Users/MOMIJI/Documents/PlatformIO/Projects/Mega328p_vindriktning/include",
+                "C:/Users/MOMIJI/Documents/PlatformIO/Projects/Mega328p_vindriktning/src",
                 "C:/Users/MOMIJI/.platformio/packages/framework-arduino-avr/cores/arduino",
                 "C:/Users/MOMIJI/.platformio/packages/framework-arduino-avr/variants/standard",
                 "C:/Users/MOMIJI/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
@@ -22,8 +22,8 @@
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
                 "path": [
-                    "C:/Users/MOMIJI/Documents/PlatformIO/Projects/vindriktning_test/include",
-                    "C:/Users/MOMIJI/Documents/PlatformIO/Projects/vindriktning_test/src",
+                    "C:/Users/MOMIJI/Documents/PlatformIO/Projects/Mega328p_vindriktning/include",
+                    "C:/Users/MOMIJI/Documents/PlatformIO/Projects/Mega328p_vindriktning/src",
                     "C:/Users/MOMIJI/.platformio/packages/framework-arduino-avr/cores/arduino",
                     "C:/Users/MOMIJI/.platformio/packages/framework-arduino-avr/variants/standard",
                     "C:/Users/MOMIJI/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",

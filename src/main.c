@@ -48,6 +48,8 @@ void UART_TxDec(uint16_t Value);
 
 unsigned char rData;
 
+unsigned int testIntVal;
+
 
 const unsigned char RESPONSE_HEADER[] = {0x16, 0x11, 0x0B};
 unsigned char dataFrame[20];
@@ -94,13 +96,15 @@ void UART_init(void) {
 
 
 void UART_TxDec(uint16_t Value) {
-  char decStr[6];
+  char decStr[7] = {0};
 
   itoa(Value, decStr, 10);
-  for(int i=0; decStr[i] != '\0'; i++) {
+  for(int i = 0; decStr[i] != '\0'; i++) {
     while(!(UCSR0A & (1 << UDRE0)));
     UDR0 = decStr[i];
+    
   }
+  
 }//end uarttxdec
 
 
@@ -126,7 +130,7 @@ void processDataFrame(void) {
     PMValue = (dataFrame[5]*256)+dataFrame[6];
 
     UART_TxChar(PMValue);
-    UART_TxDec(HexToDec(PMValue));
+    UART_TxDec(PMValue);
     
   }
 
@@ -134,31 +138,32 @@ void processDataFrame(void) {
 }// end processdataframe
 
 
-int HexToDec(int hex_value) {
-  int DecValue = 0;
-  int placeValue = 1;
-  int HexDigit;
+// int HexToDec(int hex_value) {
+//   int DecValue = 0;
+//   int placeValue = 1;
+//   int HexDigit;
 
-  for(int i=0; i<2; i++) {
-    HexDigit = (hex_value >> (4*i)) & 0xF;
+//   for(int i=0; i<2; i++) {
+//     HexDigit = (hex_value >> (4*i)) & 0xF;
 
-    if(HexDigit >= 0 && HexDigit <= 9) {
-      DecValue += HexDigit*placeValue;
-    }
-    else if(HexDigit >= 0xA && HexDigit <= 0xF) {
-      DecValue += (HexDigit-9)*placeValue;
-    }
-    else {
-      return -1;
-    }
+//     if(HexDigit >= 0 && HexDigit <= 9) {
+//       DecValue += HexDigit*placeValue;
+//     }
+//     else if(HexDigit >= 0xA && HexDigit <= 0xF) {
+//       DecValue += (HexDigit-9)*placeValue;
+//     }
+//     else {
+//       return -1;
+//     }
 
-    placeValue *= 16;
+//     placeValue *= 16;
   
-  }
+//   }
 
-  return DecValue;
+//   return DecValue;
 
-}// end hextodec
+// }// end hextodec
+
 
 
 
