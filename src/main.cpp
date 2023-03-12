@@ -1,0 +1,176 @@
+/*
+      Ikea Vindriktning
+
+      Created on: Feb 6, 2023
+      Author: REDWOLF DiGiTAL
+
+
+
+      PM1006 UART Config
+        - Data bit      8
+        - Stop bit      1
+        - Check bit     NON
+        - Baud rate     9600
+
+      PM1006 Data frames
+
+        RESPONSE 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 CS
+        16 11 08 xx xx xx xx xx xx xx xx xx xx xx xx xx xx xx xx xx
+
+      PM1006 PM2.5 report ug/m3 = ([05]*256)+[06] 
+
+
+██████╗░███████╗██████╗░░██╗░░░░░░░██╗░█████╗░██╗░░░░░███████╗  ██████╗░██╗░██████╗░██╗████████╗░█████╗░██╗░░░░░
+██╔══██╗██╔════╝██╔══██╗░██║░░██╗░░██║██╔══██╗██║░░░░░██╔════╝  ██╔══██╗██║██╔════╝░██║╚══██╔══╝██╔══██╗██║░░░░░
+██████╔╝█████╗░░██║░░██║░╚██╗████╗██╔╝██║░░██║██║░░░░░█████╗░░  ██║░░██║██║██║░░██╗░██║░░░██║░░░███████║██║░░░░░
+██╔══██╗██╔══╝░░██║░░██║░░████╔═████║░██║░░██║██║░░░░░██╔══╝░░  ██║░░██║██║██║░░╚██╗██║░░░██║░░░██╔══██║██║░░░░░
+██║░░██║███████╗██████╔╝░░╚██╔╝░╚██╔╝░╚█████╔╝███████╗██║░░░░░  ██████╔╝██║╚██████╔╝██║░░░██║░░░██║░░██║███████╗
+╚═╝░░╚═╝╚══════╝╚═════╝░░░░╚═╝░░░╚═╝░░░╚════╝░╚══════╝╚═╝░░░░░  ╚═════╝░╚═╝░╚═════╝░╚═╝░░░╚═╝░░░╚═╝░░╚═╝╚══════╝
+
+*/
+
+
+#include <avr/io.h>
+#include <avr/interrupt.h>
+#include <string.h>
+#include <stdlib.h>
+// #include <avr/delay.h>
+
+#define F_CPU     16000000L
+
+void UART_init(void);
+void UART_TxArr(unsigned char data[], unsigned int len);
+void UART_TxChar(unsigned char data);
+void processDataFrame(void);
+int HexToDec(int hex_value);
+void UART_TxDec(uint16_t Value);
+
+
+unsigned char rData;
+
+
+const unsigned char RESPONSE_HEADER[] = {0x16, 0x11, 0x0B};
+unsigned char dataFrame[20];
+volatile int FrameIndex = 0;
+int PMValue = 500;
+
+
+typedef struct {
+  unsigned char process;
+  unsigned char bussy;        //Not use (・ ω <)
+}FLAG;
+
+FLAG flag;
+
+
+
+
+int main(void) {
+
+  flag.process = 0;
+
+  UART_init();
+
+  while(1) {
+    if(flag.process == 1) {
+      processDataFrame();
+      flag.process = 0;
+    }
+  }
+}//end main
+
+
+void UART_init(void) {
+
+  UBRR0H = (207 >> 8);
+  UBRR0L = (207);
+
+  UCSR0A = (1 << U2X0);
+  UCSR0C = (1 << UCSZ00) | (1 << UCSZ01);                   //Set frame format data 8 bit. 1 stop bit, parity none
+  UCSR0B = (1 << TXEN0) | (1 << RXEN0) | (1 << RXCIE0);     //Enable Rx and Rx | Rx interrupt
+
+  sei();
+}//end uart_init
+
+
+void UART_TxDec(uint16_t Value) {
+  char decStr[6];
+
+  itoa(Value, decStr, 10);
+  for(int i=0; decStr[i] != '\0'; i++) {
+    while(!(UCSR0A & (1 << UDRE0)));
+    UDR0 = decStr[i];
+  }
+}//end uarttxdec
+
+
+void UART_TxChar(unsigned char data) {
+  while(!(UCSR0A & (1 << UDRE0))); //wait for empty Tx buffer
+  UDR0 = data; 
+}//end uarttxdata
+
+
+void UART_TxArr(unsigned char data[], unsigned int len) {
+  unsigned int i;
+  for(i = 0; i < len; i++) {
+    while(!(UCSR0A & (1 << UDRE0)));
+    UDR0 = data[i];
+  }
+}//end uarttxarr
+
+
+void processDataFrame(void) {
+  //UART_TxArr(dataFrame, 20);
+
+  if(dataFrame[0] == RESPONSE_HEADER[0] && dataFrame[1] == RESPONSE_HEADER[1] && dataFrame[2] == RESPONSE_HEADER[2]) {
+    PMValue = (dataFrame[5]*256)+dataFrame[6];
+
+    UART_TxChar(PMValue);
+    UART_TxDec(HexToDec(PMValue));
+    
+  }
+
+  memset(dataFrame, 0, 20);
+}// end processdataframe
+
+
+int HexToDec(int hex_value) {
+  int DecValue = 0;
+  int placeValue = 1;
+  int HexDigit;
+
+  for(int i=0; i<2; i++) {
+    HexDigit = (hex_value >> (4*i)) & 0xF;
+
+    if(HexDigit >= 0 && HexDigit <= 9) {
+      DecValue += HexDigit*placeValue;
+    }
+    else if(HexDigit >= 0xA && HexDigit <= 0xF) {
+      DecValue += (HexDigit-9)*placeValue;
+    }
+    else {
+      return -1;
+    }
+
+    placeValue *= 16;
+  
+  }
+
+  return DecValue;
+
+}// end hextodec
+
+
+
+ISR(USART_RX_vect) {
+  //interrupt if have Rx data
+  dataFrame[FrameIndex] = UDR0;
+  if(FrameIndex >= 19) {
+    FrameIndex = 0;
+    processDataFrame();
+    flag.process = 1;
+  }else{
+    FrameIndex++;
+    flag.process = 0;
+  }
+}//end isr
