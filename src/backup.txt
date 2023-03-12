@@ -33,6 +33,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <string.h>
+#include <stdlib.h>
 // #include <avr/delay.h>
 
 #define F_CPU     16000000L
@@ -41,6 +42,8 @@ void UART_init(void);
 void UART_TxArr(unsigned char data[], unsigned int len);
 void UART_TxChar(unsigned char data);
 void processDataFrame(void);
+int HexToDec(int hex_value);
+void UART_TxDec(uint16_t Value);
 
 
 unsigned char rData;
@@ -90,6 +93,17 @@ void UART_init(void) {
 }//end uart_init
 
 
+void UART_TxDec(uint16_t Value) {
+  char decStr[6];
+
+  itoa(Value, decStr, 10);
+  for(int i=0; decStr[i] != '\0'; i++) {
+    while(!(UCSR0A & (1 << UDRE0)));
+    UDR0 = decStr[i];
+  }
+}//end uarttxdec
+
+
 void UART_TxChar(unsigned char data) {
   while(!(UCSR0A & (1 << UDRE0))); //wait for empty Tx buffer
   UDR0 = data; 
@@ -112,11 +126,40 @@ void processDataFrame(void) {
     PMValue = (dataFrame[5]*256)+dataFrame[6];
 
     UART_TxChar(PMValue);
+    UART_TxDec(HexToDec(PMValue));
     
   }
 
   memset(dataFrame, 0, 20);
 }// end processdataframe
+
+
+int HexToDec(int hex_value) {
+  int DecValue = 0;
+  int placeValue = 1;
+  int HexDigit;
+
+  for(int i=0; i<2; i++) {
+    HexDigit = (hex_value >> (4*i)) & 0xF;
+
+    if(HexDigit >= 0 && HexDigit <= 9) {
+      DecValue += HexDigit*placeValue;
+    }
+    else if(HexDigit >= 0xA && HexDigit <= 0xF) {
+      DecValue += (HexDigit-9)*placeValue;
+    }
+    else {
+      return -1;
+    }
+
+    placeValue *= 16;
+  
+  }
+
+  return DecValue;
+
+}// end hextodec
+
 
 
 ISR(USART_RX_vect) {
