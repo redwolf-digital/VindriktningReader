@@ -137,7 +137,7 @@ void processDataFrame(void) {
   memset(dataFrame, 0, 20);
 }// end processdataframe
 
-//------------------------------------- for future update -------------------------------------
+
 // int HexToDec(int hex_value) {
 //   int DecValue = 0;
 //   int placeValue = 1;
@@ -163,7 +163,7 @@ void processDataFrame(void) {
 //   return DecValue;
 
 // }// end hextodec
-// ---------------------------------------------------------------------------------------------
+
 
 
 

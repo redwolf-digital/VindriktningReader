@@ -51,14 +51,3 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-#PIO VScode
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-
-.pio/uno
-.checksum
-.pio/build/uno/.sconsign39.dblite
-*.dblite
