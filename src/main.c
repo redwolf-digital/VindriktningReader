@@ -54,7 +54,7 @@ unsigned int testIntVal;
 const unsigned char RESPONSE_HEADER[] = {0x16, 0x11, 0x0B};
 unsigned char dataFrame[20];
 volatile int FrameIndex = 0;
-int PMValue = 500;
+int PMValue;
 
 
 typedef struct {
@@ -137,7 +137,7 @@ void processDataFrame(void) {
   memset(dataFrame, 0, 20);
 }// end processdataframe
 
-
+//------------------------------------- for future update -------------------------------------
 // int HexToDec(int hex_value) {
 //   int DecValue = 0;
 //   int placeValue = 1;
@@ -163,7 +163,7 @@ void processDataFrame(void) {
 //   return DecValue;
 
 // }// end hextodec
-
+// ---------------------------------------------------------------------------------------------
 
 
 
